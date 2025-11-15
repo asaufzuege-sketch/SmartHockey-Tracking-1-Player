@@ -947,3 +947,50 @@ img, .torbild-box img, .time-btn, td[data-player][data-cat] {
     margin: 20px;
   }
 }
+/* Drag & Drop Styles für Stats Table */
+.stats-table tbody tr {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.stats-table tbody tr.dragging {
+  background-color: rgba(68, 187, 145, 0.2) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+.stats-table tbody tr.drag-placeholder {
+  background-color: rgba(68, 187, 145, 0.3) !important;
+  border: 2px dashed #44bb91 !important;
+  opacity: 0.6;
+}
+
+.stats-table tbody tr:not(.total-row):not(.dragging) {
+  cursor: grab;
+}
+
+.stats-table tbody tr:not(.total-row):active {
+  cursor: grabbing;
+}
+
+/* Touch-optimiert */
+.stats-table tbody tr {
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.stats-table tbody tr td {
+  pointer-events: auto;
+}
+
+/* Drag feedback */
+.stats-table tbody tr.dragging td {
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .stats-table tbody tr {
+    touch-action: manipulation;
+  }
+}
