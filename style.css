@@ -742,7 +742,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 }
 
 /* ==================== */
-/* TEAMAUSWAHL STYLES - KORRIGIERT */
+/* TEAMAUSWAHL STYLES */
 /* ==================== */
 
 .team-selection-container {
@@ -815,8 +815,8 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 }
 
 .edit-team-btn {
-  background: #666;
-  color: white;
+  background: #44bb91;
+  color: #333;
   border: none;
   padding: 8px 12px;
   border-radius: 6px;
@@ -826,7 +826,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 }
 
 .edit-team-btn:hover {
-  background: #777;
+  background: #36a67d;
 }
 
 /* Modal Styles */
@@ -890,7 +890,19 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   font-size: 1rem;
   font-weight: 600;
   transition: background 0.3s ease;
-  min-height: 44px; /* Gleiche Höhe für beide Buttons */
+  height: 44px; /* Explizite Höhe für beide Buttons */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-btn {
+  background: #44bb91;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background: #36a67d;
 }
 
 .cancel-btn {
@@ -912,6 +924,47 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
 
 .current-team-info strong {
   color: #44bb91;
+}
+
+/* ==================== */
+/* DRAG & DROP STYLES */
+/* ==================== */
+
+/* Drag Handle Styles */
+.drag-handle {
+  display: inline-block;
+  font-weight: bold;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  font-size: 16px;
+  line-height: 1;
+  vertical-align: middle;
+  cursor: grab;
+}
+
+.drag-handle:hover {
+  color: #36a67d !important;
+  transform: scale(1.1);
+}
+
+.drag-handle:active {
+  cursor: grabbing !important;
+}
+
+/* Dragging state */
+.stats-table tbody tr {
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.stats-table tbody tr:not(.total-row) td:first-child + td {
+  position: relative;
+}
+
+/* Touch optimization */
+.drag-handle {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 /* Touch-Optimierung für Zoom-Problem */
@@ -946,51 +999,10 @@ img, .torbild-box img, .time-btn, td[data-player][data-cat] {
   .modal-content {
     margin: 20px;
   }
-}
-/* Drag & Drop Styles für Stats Table */
-.stats-table tbody tr {
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-.stats-table tbody tr.dragging {
-  background-color: rgba(68, 187, 145, 0.2) !important;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  cursor: grabbing !important;
-  user-select: none;
-}
-
-.stats-table tbody tr.drag-placeholder {
-  background-color: rgba(68, 187, 145, 0.3) !important;
-  border: 2px dashed #44bb91 !important;
-  opacity: 0.6;
-}
-
-.stats-table tbody tr:not(.total-row):not(.dragging) {
-  cursor: grab;
-}
-
-.stats-table tbody tr:not(.total-row):active {
-  cursor: grabbing;
-}
-
-/* Touch-optimiert */
-.stats-table tbody tr {
-  touch-action: pan-y;
-  -webkit-user-select: none;
-  user-select: none;
-}
-
-.stats-table tbody tr td {
-  pointer-events: auto;
-}
-
-/* Drag feedback */
-.stats-table tbody tr.dragging td {
-  pointer-events: none;
-}
-
-@media (max-width: 768px) {
-  .stats-table tbody tr {
-    touch-action: manipulation;
+  
+  .drag-handle {
+    font-size: 18px;
+    margin-right: 10px !important;
+    padding: 2px;
   }
 }
