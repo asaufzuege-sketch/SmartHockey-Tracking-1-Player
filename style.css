@@ -879,6 +879,7 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   display: flex;
   gap: 10px;
   justify-content: center;
+  width: 100%;
 }
 
 .modal-buttons button {
@@ -890,27 +891,29 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   font-size: 1rem;
   font-weight: 600;
   transition: background 0.3s ease;
-  height: 44px; /* Explizite Höhe für beide Buttons */
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
-.confirm-btn {
+.modal-buttons .confirm-btn {
   background: #44bb91;
   color: white;
 }
 
-.confirm-btn:hover {
+.modal-buttons .confirm-btn:hover {
   background: #36a67d;
 }
 
-.cancel-btn {
+.modal-buttons .cancel-btn {
   background: #666;
   color: white;
 }
 
-.cancel-btn:hover {
+.modal-buttons .cancel-btn:hover {
   background: #777;
 }
 
@@ -1004,5 +1007,15 @@ img, .torbild-box img, .time-btn, td[data-player][data-cat] {
     font-size: 18px;
     margin-right: 10px !important;
     padding: 2px;
+  }
+  
+  .modal-buttons {
+    flex-direction: row !important;
+    gap: 10px;
+  }
+  
+  .modal-buttons button {
+    flex: 1;
+    min-width: 0;
   }
 }
