@@ -73,7 +73,7 @@ App.csvHandler = {
       data.push(row);
     });
     
-    // Totals Row mit korrekter Shot-Darstellung
+    // Totals Row - wieder wie vorher aber Shot-Zelle von Tabelle übernehmen
     const totals = ["", `Total (${App.data.selectedPlayers.length})`];
     
     App.data.categories.forEach(cat => {
@@ -82,15 +82,22 @@ App.csvHandler = {
         const avg = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
         totals.push(`Ø ${avg}`);
       } else if (cat === "FaceOffs Won") {
-        const totalShots = App.data.selectedPlayers.reduce((sum, p) => sum + (App.data.statsData[p.name]?.["Shot"] || 0), 0);
         const totalFace = App.data.selectedPlayers.reduce((sum, p) => sum + (App.data.statsData[p.name]?.["FaceOffs"] || 0), 0);
         const totalWon = App.data.selectedPlayers.reduce((sum, p) => sum + (App.data.statsData[p.name]?.["FaceOffs Won"] || 0), 0);
         const pct = totalFace ? Math.round((totalWon / totalFace) * 100) : 0;
         totals.push(`${totalWon} (${pct}%)`);
       } else if (cat === "Shot") {
-        // Shot Total mit vs Format - über statsTable Funktion
-        const shotString = App.statsTable.getShotTotalString();
-        totals.push(shotString);
+        // Shot-Zelle 1:1 aus der Tabelle übernehmen
+        const shotCell = document.querySelector('.total-cell[data-cat="Shot"]');
+        if (shotCell && shotCell.textContent) {
+          // Textinhalt der Zelle nehmen, aber HTML-Tags entfernen
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = shotCell.innerHTML;
+          totals.push(tempDiv.textContent || tempDiv.innerText || '');
+        } else {
+          const total = App.data.selectedPlayers.reduce((sum, p) => sum + (App.data.statsData[p.name]?.[cat] || 0), 0);
+          totals.push(total);
+        }
       } else {
         const total = App.data.selectedPlayers.reduce((sum, p) => sum + (App.data.statsData[p.name]?.[cat] || 0), 0);
         totals.push(total);
