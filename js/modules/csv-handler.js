@@ -74,6 +74,33 @@ App.csvHandler = {
     return text;
   },
   
+  // Korrekte CSV-Formatierung für Excel
+  formatCSVCell(value) {
+    let cellValue = String(value);
+    
+    // Entferne HTML-Tags falls vorhanden
+    if (cellValue.includes('<')) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = cellValue;
+      cellValue = tempDiv.textContent || tempDiv.innerText || '';
+    }
+    
+    // Trim whitespace
+    cellValue = cellValue.trim();
+    
+    // Escape Anführungszeichen
+    if (cellValue.includes('"')) {
+      cellValue = cellValue.replace(/"/g, '""');
+    }
+    
+    // Setze in Anführungszeichen wenn Komma, Semikolon, Anführungszeichen oder Zeilenumbruch enthalten
+    if (cellValue.includes(',') || cellValue.includes(';') || cellValue.includes('"') || cellValue.includes('\n') || cellValue.includes('\r')) {
+      cellValue = `"${cellValue}"`;
+    }
+    
+    return cellValue;
+  },
+  
   exportStats() {
     const data = [];
     const headers = ["#", "Spieler", ...App.data.categories, "Time"];
@@ -90,7 +117,7 @@ App.csvHandler = {
       data.push(row);
     });
     
-    // Totals Row - saubere Textextraktion
+    // Totals Row - saubere Berechnung
     const totals = ["", `Total (${App.data.selectedPlayers.length})`];
     
     App.data.categories.forEach(cat => {
@@ -104,7 +131,7 @@ App.csvHandler = {
         const pct = totalFace ? Math.round((totalWon / totalFace) * 100) : 0;
         totals.push(`${totalWon} (${pct}%)`);
       } else if (cat === "Shot") {
-        // Shot-Zelle sauber aus Tabelle extrahieren
+        // Shot-Zelle 1:1 aus Tabelle aber als sauberer Text
         const shotCell = document.querySelector('.total-cell[data-cat="Shot"]');
         if (shotCell) {
           const cleanText = this.getCleanTextFromElement(shotCell);
@@ -189,19 +216,25 @@ App.csvHandler = {
     );
   },
   
+  // KORRIGIERTE downloadCSV Funktion - Korrekte Formatierung für Excel
   downloadCSV(data, filename) {
-    const csv = data.map(row => 
-      row.map(cell => {
-        const cellStr = String(cell);
-        // Escape quotes and wrap in quotes if contains comma, quote, or newline
-        if (cellStr.includes(",") || cellStr.includes('"') || cellStr.includes("\n")) {
-          return '"' + cellStr.replace(/"/g, '""') + '"';
-        }
-        return cellStr;
-      }).join(",")
-    ).join("\n");
+    // BOM für korrekte UTF-8 Erkennung in Excel
+    const BOM = '\uFEFF';
     
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    // Formatiere jede Zeile korrekt
+    const csvLines = data.map(row => {
+      return row.map(cell => this.formatCSVCell(cell)).join(',');
+    });
+    
+    // Füge BOM hinzu und erstelle CSV-String
+    const csvContent = BOM + csvLines.join('\n');
+    
+    // Erstelle Blob mit korrekter Kodierung
+    const blob = new Blob([csvContent], { 
+      type: 'text/csv;charset=utf-8;' 
+    });
+    
+    // Download Link erstellen
     const link = document.createElement("a");
     
     if (link.download !== undefined) {
@@ -214,6 +247,8 @@ App.csvHandler = {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     }
+    
+    console.log('CSV Export completed:', filename);
   },
   
   importStats(file) {
@@ -339,20 +374,28 @@ App.csvHandler = {
     reader.readAsText(file);
   },
   
+  // KORRIGIERTE parseCSVLine Funktion
   parseCSVLine(line) {
     const result = [];
     let current = "";
     let inQuotes = false;
+    let i = 0;
     
-    for (let i = 0; i < line.length; i++) {
+    // Entferne BOM falls vorhanden
+    if (line.charCodeAt(0) === 0xFEFF) {
+      line = line.slice(1);
+    }
+    
+    while (i < line.length) {
       const char = line[i];
       
       if (char === '"' && !inQuotes) {
         inQuotes = true;
       } else if (char === '"' && inQuotes) {
-        if (line[i + 1] === '"') {
+        if (i + 1 < line.length && line[i + 1] === '"') {
+          // Escaped quote
           current += '"';
-          i++;
+          i++; // Skip next quote
         } else {
           inQuotes = false;
         }
@@ -362,9 +405,12 @@ App.csvHandler = {
       } else {
         current += char;
       }
+      i++;
     }
     
+    // Add last cell
     result.push(current);
+    
     return result;
   },
   
