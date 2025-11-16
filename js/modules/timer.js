@@ -56,8 +56,9 @@ App.timer = {
     
     let holdTimer = null;
     let longPress = false;
-    let touchHandled = false; // Flag um Touch-Events zu tracken
+    let lastTouchTime = 0; // Zeitstempel des letzten Touches
     const LONG_MS = 800;
+    const GHOST_CLICK_THRESHOLD = 600; // Zeit in ms um Ghost Clicks zu blockieren
     
     this.btn.addEventListener("mousedown", () => {
       longPress = false;
@@ -76,8 +77,8 @@ App.timer = {
     });
     
     this.btn.addEventListener("touchstart", (e) => {
-      touchHandled = true;
       longPress = false;
+      lastTouchTime = Date.now();
       holdTimer = setTimeout(() => {
         this.reset();
         longPress = true;
@@ -86,11 +87,6 @@ App.timer = {
     
     this.btn.addEventListener("touchend", (e) => {
       if (holdTimer) clearTimeout(holdTimer);
-      
-      // Verhindere Ghost Click nach Touch
-      setTimeout(() => {
-        touchHandled = false;
-      }, 500);
       
       // Bei Touch direkt hier den Toggle ausführen
       if (!longPress) {
@@ -101,8 +97,11 @@ App.timer = {
     }, { passive: true });
     
     this.btn.addEventListener("click", (e) => {
-      // Ignoriere Click wenn gerade Touch behandelt wurde
-      if (touchHandled) {
+      // Blockiere Click wenn er kurz nach einem Touch kommt (Ghost Click)
+      const timeSinceTouch = Date.now() - lastTouchTime;
+      if (timeSinceTouch < GHOST_CLICK_THRESHOLD) {
+        e.preventDefault();
+        e.stopPropagation();
         return;
       }
       
