@@ -68,6 +68,13 @@ App.teamSelection = {
       App.showPage("selection");
     }
     
+    // Re-render player selection nach Team-Wechsel
+    setTimeout(() => {
+      if (App.playerSelection && typeof App.playerSelection.render === 'function') {
+        App.playerSelection.render();
+      }
+    }, 50);
+    
     console.log(`Team ${teamNumber} selected`);
   },
   
