@@ -271,7 +271,8 @@ App.goalMap = {
         
         let lastTap = 0;
         let clickTimeout = null;
-        let touchStart = 0;
+        let lastTouchTime = 0; // Zeitstempel für Ghost Click Prevention
+        const GHOST_CLICK_THRESHOLD = 600; // ms
         
         const updateValue = (delta) => {
           const current = Number(btn.textContent) || 0;
@@ -282,7 +283,15 @@ App.goalMap = {
           localStorage.setItem("timeData", JSON.stringify(timeData));
         };
         
-        btn.addEventListener("click", () => {
+        btn.addEventListener("click", (e) => {
+          // Blockiere Click wenn er kurz nach Touch kommt (Ghost Click)
+          const timeSinceTouch = Date.now() - lastTouchTime;
+          if (timeSinceTouch < GHOST_CLICK_THRESHOLD) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+          
           const now = Date.now();
           const diff = now - lastTap;
           if (diff < 300) {
@@ -302,22 +311,23 @@ App.goalMap = {
         });
         
         btn.addEventListener("touchstart", (e) => {
+          lastTouchTime = Date.now(); // Speichere Touch-Zeitstempel
+          
           const now = Date.now();
-          const diff = now - touchStart;
+          const diff = now - lastTap;
           if (diff < 300) {
-            e.preventDefault();
             if (clickTimeout) {
               clearTimeout(clickTimeout);
               clickTimeout = null;
             }
             updateValue(-1);
-            touchStart = 0;
+            lastTap = 0;
           } else {
-            touchStart = now;
+            lastTap = now;
             setTimeout(() => {
-              if (touchStart !== 0) {
+              if (lastTap !== 0) {
                 updateValue(+1);
-                touchStart = 0;
+                lastTap = 0;
               }
             }, 300);
           }
