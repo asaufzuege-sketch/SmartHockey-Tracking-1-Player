@@ -1,4 +1,4 @@
-// CSV Export/Import Handler
+// CSV Export/Import Handler mit teamspezifischer Datenspeicherung
 App.csvHandler = {
   fileInput: null,
   
@@ -57,92 +57,60 @@ App.csvHandler = {
     }
   },
   
-  // Hilfsfunktion um sauberen Text aus HTML zu extrahieren
-  getCleanTextFromElement(element) {
-    if (!element) return '';
-    
-    // Erstelle temporäres Element zum sauberen Text-Extraktion
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = element.innerHTML;
-    
-    // Extrahiere nur den Text, keine HTML-Tags
-    let text = tempDiv.textContent || tempDiv.innerText || '';
-    
-    // Bereinige Whitespace
-    text = text.trim().replace(/\s+/g, ' ');
-    
-    return text;
+  // Aktuelle Team-ID ermitteln
+  getCurrentTeamId() {
+    return App.data.currentTeam || "team1";
   },
   
-  // Korrekte CSV-Formatierung für Excel
-  formatCSVCell(value) {
-    let cellValue = String(value);
-    
-    // Entferne HTML-Tags falls vorhanden
-    if (cellValue.includes('<')) {
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = cellValue;
-      cellValue = tempDiv.textContent || tempDiv.innerText || '';
-    }
-    
-    // Trim whitespace
-    cellValue = cellValue.trim();
-    
-    // Escape Anführungszeichen
-    if (cellValue.includes('"')) {
-      cellValue = cellValue.replace(/"/g, '""');
-    }
-    
-    // Setze in Anführungszeichen wenn Komma, Semikolon, Anführungszeichen oder Zeilenumbruch enthalten
-    if (cellValue.includes(',') || cellValue.includes(';') || cellValue.includes('"') || cellValue.includes('\n') || cellValue.includes('\r')) {
-      cellValue = `"${cellValue}"`;
-    }
-    
-    return cellValue;
+  // Teamspezifische Storage Keys
+  getTeamStorageKey(key) {
+    return `${key}_${this.getCurrentTeamId()}`;
   },
   
+  // Verbesserte Export-Funktion mit korrekter Tabellenformatierung
   exportStats() {
     const data = [];
+    
+    // Header exakt wie in der Season-Tabelle
     const headers = ["#", "Spieler", ...App.data.categories, "Time"];
     data.push(headers);
     
-    // Spieler Daten
+    // Spieler Daten - exakte Formatierung wie in der Tabelle
     App.data.selectedPlayers.forEach(player => {
       const row = [
-        player.num || "-",
+        player.num || "",
         player.name,
-        ...App.data.categories.map(cat => App.data.statsData[player.name]?.[cat] || 0),
+        ...App.data.categories.map(cat => {
+          const value = App.data.statsData[player.name]?.[cat] || 0;
+          return value;
+        }),
         App.helpers.formatTimeMMSS(App.data.playerTimes[player.name] || 0)
       ];
       data.push(row);
     });
     
-    // Totals Row - saubere Berechnung
+    // Totals Row - exakt wie in der Tabelle berechnet
     const totals = ["", `Total (${App.data.selectedPlayers.length})`];
     
     App.data.categories.forEach(cat => {
       if (cat === "+/-") {
+        // Durchschnitt berechnen
         const vals = App.data.selectedPlayers.map(p => Number(App.data.statsData[p.name]?.[cat] || 0));
         const avg = vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
         totals.push(`Ø ${avg}`);
       } else if (cat === "FaceOffs Won") {
+        // FaceOff Prozentsatz
         const totalFace = App.data.selectedPlayers.reduce((sum, p) => sum + (App.data.statsData[p.name]?.["FaceOffs"] || 0), 0);
         const totalWon = App.data.selectedPlayers.reduce((sum, p) => sum + (App.data.statsData[p.name]?.["FaceOffs Won"] || 0), 0);
         const pct = totalFace ? Math.round((totalWon / totalFace) * 100) : 0;
         totals.push(`${totalWon} (${pct}%)`);
       } else if (cat === "Shot") {
-        // Shot-Zelle 1:1 aus Tabelle aber als sauberer Text
-        const shotCell = document.querySelector('.total-cell[data-cat="Shot"]');
-        if (shotCell) {
-          const cleanText = this.getCleanTextFromElement(shotCell);
-          totals.push(cleanText);
-        } else {
-          // Fallback: manuelle Berechnung
-          const own = App.data.selectedPlayers.reduce((sum, p) => sum + (App.data.statsData[p.name]?.["Shot"] || 0), 0);
-          const opp = App.statsTable.getOpponentShots() || 0;
-          totals.push(`${own} vs ${opp}`);
-        }
+        // Shot vs Opponent
+        const own = App.data.selectedPlayers.reduce((sum, p) => sum + (App.data.statsData[p.name]?.["Shot"] || 0), 0);
+        const opp = this.getOpponentShots();
+        totals.push(`${own} vs ${opp}`);
       } else {
+        // Standard Summe
         const total = App.data.selectedPlayers.reduce((sum, p) => sum + (App.data.statsData[p.name]?.[cat] || 0), 0);
         totals.push(total);
       }
@@ -154,11 +122,18 @@ App.csvHandler = {
     
     data.push(totals);
     
-    this.downloadCSV(data, "game_data.csv");
+    // Teamspezifischer Filename
+    const teamId = this.getCurrentTeamId();
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+    const filename = `game_data_${teamId}_${timestamp}.csv`;
+    
+    this.downloadCSV(data, filename);
   },
   
   exportSeason() {
     const data = [];
+    
+    // Header exakt wie Season-Tabelle
     const headers = ["#", "Spieler", ...App.data.categories, "MVP Points"];
     data.push(headers);
     
@@ -167,7 +142,7 @@ App.csvHandler = {
       const mvpPoints = this.calculateMVPPoints(seasonStats);
       
       const row = [
-        player.num || "-",
+        player.num || "",
         player.name,
         ...App.data.categories.map(cat => seasonStats[cat] || 0),
         mvpPoints
@@ -175,7 +150,7 @@ App.csvHandler = {
       data.push(row);
     });
     
-    // Totals
+    // Season Totals
     const totals = ["", `Total (${App.data.selectedPlayers.length})`];
     App.data.categories.forEach(cat => {
       const total = App.data.selectedPlayers.reduce((sum, p) => {
@@ -192,7 +167,17 @@ App.csvHandler = {
     
     data.push(totals);
     
-    this.downloadCSV(data, "season_data.csv");
+    // Teamspezifischer Filename
+    const teamId = this.getCurrentTeamId();
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+    const filename = `season_data_${teamId}_${timestamp}.csv`;
+    
+    this.downloadCSV(data, filename);
+  },
+  
+  getOpponentShots() {
+    const shotCell = document.querySelector('.total-cell[data-cat="Shot"]');
+    return shotCell ? (Number(shotCell.dataset.opp) || 0) : 0;
   },
   
   calculateMVPPoints(stats) {
@@ -216,27 +201,41 @@ App.csvHandler = {
     );
   },
   
-  // KORRIGIERTE downloadCSV Funktion - Korrekte Formatierung für Excel
+  // Korrigierte CSV Download mit perfekter Excel-Kompatibilität
   downloadCSV(data, filename) {
-    // BOM für korrekte UTF-8 Erkennung in Excel
+    // BOM für UTF-8 Erkennung in Excel
     const BOM = '\uFEFF';
     
-    // Formatiere jede Zeile korrekt
+    // CSV Zeilen mit korrekter Formatierung
     const csvLines = data.map(row => {
-      return row.map(cell => this.formatCSVCell(cell)).join(',');
+      return row.map(cell => {
+        let cellValue = String(cell || "");
+        
+        // Escape Anführungszeichen
+        if (cellValue.includes('"')) {
+          cellValue = cellValue.replace(/"/g, '""');
+        }
+        
+        // Setze in Anführungszeichen wenn nötig
+        if (cellValue.includes(',') || cellValue.includes(';') || 
+            cellValue.includes('"') || cellValue.includes('\n') || 
+            cellValue.includes('\r') || cellValue.includes(' ')) {
+          cellValue = `"${cellValue}"`;
+        }
+        
+        return cellValue;
+      }).join(',');
     });
     
-    // Füge BOM hinzu und erstelle CSV-String
-    const csvContent = BOM + csvLines.join('\n');
+    // CSV Content erstellen
+    const csvContent = BOM + csvLines.join('\r\n');
     
-    // Erstelle Blob mit korrekter Kodierung
+    // Blob erstellen und Download
     const blob = new Blob([csvContent], { 
       type: 'text/csv;charset=utf-8;' 
     });
     
-    // Download Link erstellen
     const link = document.createElement("a");
-    
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
@@ -256,7 +255,7 @@ App.csvHandler = {
     reader.onload = (e) => {
       try {
         const csv = e.target.result;
-        const lines = csv.split("\n").filter(line => line.trim());
+        const lines = csv.split(/\r?\n/).filter(line => line.trim());
         
         if (lines.length < 2) {
           alert("CSV Datei ist leer oder ungültig.");
@@ -269,7 +268,7 @@ App.csvHandler = {
         // Header Validation
         let isValidFormat = true;
         for (let i = 0; i < Math.min(headers.length, expectedHeaders.length); i++) {
-          if (headers[i] !== expectedHeaders[i]) {
+          if (headers[i].trim() !== expectedHeaders[i]) {
             isValidFormat = false;
             break;
           }
@@ -280,7 +279,7 @@ App.csvHandler = {
           return;
         }
         
-        // Import Data
+        // Import Data - teamspezifisch
         const newStatsData = {};
         const newPlayerTimes = {};
         const newSelectedPlayers = [];
@@ -289,8 +288,8 @@ App.csvHandler = {
           const row = this.parseCSVLine(lines[i]);
           if (row.length < headers.length) continue;
           
-          const num = row[0] === "-" ? "" : row[0];
-          const name = row[1];
+          const num = row[0] === "-" ? "" : row[0].trim();
+          const name = row[1].trim();
           
           if (!name || name.toLowerCase().includes("total")) continue;
           
@@ -305,7 +304,7 @@ App.csvHandler = {
           newPlayerTimes[name] = this.parseTimeToSeconds(timeStr);
         }
         
-        // Apply imported data
+        // Teamspezifisch speichern
         App.data.selectedPlayers = newSelectedPlayers;
         App.data.statsData = newStatsData;
         App.data.playerTimes = newPlayerTimes;
@@ -329,7 +328,7 @@ App.csvHandler = {
     reader.onload = (e) => {
       try {
         const csv = e.target.result;
-        const lines = csv.split("\n").filter(line => line.trim());
+        const lines = csv.split(/\r?\n/).filter(line => line.trim());
         
         if (lines.length < 2) {
           alert("CSV Datei ist leer oder ungültig.");
@@ -337,15 +336,13 @@ App.csvHandler = {
         }
         
         const headers = this.parseCSVLine(lines[0]);
-        
-        // Import Data
         const newSeasonData = {};
         
         for (let i = 1; i < lines.length; i++) {
           const row = this.parseCSVLine(lines[i]);
           if (row.length < headers.length) continue;
           
-          const name = row[1];
+          const name = row[1].trim();
           if (!name || name.toLowerCase().includes("total")) continue;
           
           newSeasonData[name] = {};
@@ -356,6 +353,7 @@ App.csvHandler = {
           });
         }
         
+        // Teamspezifisch speichern
         App.data.seasonData = newSeasonData;
         App.storage.saveSeasonData();
         
@@ -374,14 +372,13 @@ App.csvHandler = {
     reader.readAsText(file);
   },
   
-  // KORRIGIERTE parseCSVLine Funktion
   parseCSVLine(line) {
     const result = [];
     let current = "";
     let inQuotes = false;
     let i = 0;
     
-    // Entferne BOM falls vorhanden
+    // BOM entfernen
     if (line.charCodeAt(0) === 0xFEFF) {
       line = line.slice(1);
     }
@@ -393,9 +390,8 @@ App.csvHandler = {
         inQuotes = true;
       } else if (char === '"' && inQuotes) {
         if (i + 1 < line.length && line[i + 1] === '"') {
-          // Escaped quote
           current += '"';
-          i++; // Skip next quote
+          i++;
         } else {
           inQuotes = false;
         }
@@ -408,9 +404,7 @@ App.csvHandler = {
       i++;
     }
     
-    // Add last cell
     result.push(current);
-    
     return result;
   },
   
