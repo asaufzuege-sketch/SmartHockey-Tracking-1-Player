@@ -6,8 +6,6 @@ App.teamSelection = {
   init() {
     this.initEventListeners();
     this.initTeamFromStorage();
-    this.setupHTMLTeamButtons();
-    this.setupEditButtons();
   },
   
   setupHTMLTeamButtons() {
@@ -344,24 +342,8 @@ App.teamSelection = {
   },
   
   saveTeams() {
-    // Called before page unload - already handled by individual save methods
-  },
-  
-  refreshAllTables() {
-    // Refresh stats table
-    if (App.statsTable && App.statsTable.render) {
-      App.statsTable.render();
-    }
-    
-    // Refresh season table
-    if (App.seasonTable && App.seasonTable.render) {
-      App.seasonTable.render();
-    }
-    
-    // Update timer visuals
-    if (App.updateTimerVisuals) {
-      App.updateTimerVisuals();
-    }
+    // Called before page unload - save current team data
+    this.saveCurrentTeamData();
   },
   
   refreshAllTables() {
@@ -390,12 +372,15 @@ App.teamSelection = {
         App.data.currentTeam = savedTeam;
         this.loadTeamData(teamNumber);
       } else {
-        // Invalid team number, default to team 1
-        this.selectTeam(1);
+        this.currentTeam = 1;
+        App.data.currentTeam = "team1";
+        this.loadTeamData(1);
       }
     } else {
-      // No saved team, default to team 1
-      this.selectTeam(1);
+      this.currentTeam = 1;
+      App.data.currentTeam = "team1";
+      localStorage.setItem("currentTeam", "team1");
+      this.loadTeamData(1);
     }
     
     this.updateTeamDisplay();
@@ -455,7 +440,7 @@ App.teamSelection = {
   
   // Get current team (for compatibility with app.js)
   getCurrentTeam() {
-    return this.currentTeam ? `team${this.currentTeam}` : null;
+    return App.data.currentTeam || localStorage.getItem("currentTeam") || "team1";
   },
   
   // Export current team data
@@ -471,15 +456,5 @@ App.teamSelection = {
       App.csvHandler.fileInput.dataset.target = "stats";
       App.csvHandler.fileInput.click();
     }
-  },
-  
-  // Get current team (required by app.js)
-  getCurrentTeam() {
-    return App.data.currentTeam || localStorage.getItem("currentTeam") || "team1";
-  },
-  
-  // Save teams (required by app.js)
-  saveTeams() {
-    this.saveCurrentTeamData();
   }
 };
