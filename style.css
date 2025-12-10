@@ -662,23 +662,21 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
   }
   
   /* Top-Bar komplett überarbeiten für Mobile */
-  .top-bar {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 6px !important;
-    flex-wrap: unset !important;
-  }
-  
+  .top-bar,
   #statsPage .top-bar {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 6px !important;
-    justify-content: unset !important;
     flex-wrap: unset !important;
+    justify-content: unset !important;
     overflow-x: visible !important;
   }
   
-  .top-btn, .import-csv-btn {
+  .top-btn, 
+  .import-csv-btn,
+  #statsPage .top-btn,
+  #statsPage .import-csv-btn {
+    flex: unset !important;
     min-width: unset !important;
     width: 100% !important;
     font-size: 0.7rem !important;
@@ -687,14 +685,6 @@ th .sort-arrow { font-size: 0.7rem; color: #ddd }
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-  }
-  
-  #statsPage .top-btn,
-  #statsPage .import-csv-btn {
-    flex: unset !important;
-    min-width: unset !important;
-    font-size: 0.7rem !important;
-    padding: 8px 4px !important;
   }
   
   .timer {
