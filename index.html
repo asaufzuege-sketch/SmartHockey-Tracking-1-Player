@@ -255,6 +255,12 @@
   <script src="js/core/config.js?v=2.3"></script>
   <script src="js/core/helpers.js?v=2.3"></script>
   <script src="js/utils/storage.js?v=2.3"></script>
+  <script>
+    // Run storage migration immediately after storage.js loads
+    if (App && App.storage && typeof App.storage.migrate === 'function') {
+      App.storage.migrate();
+    }
+  </script>
   <script src="js/utils/marker-handler.js?v=2.3"></script>
   <script src="js/modules/timer.js?v=2.3"></script>
   <script src="js/modules/csv-handler.js?v=2.3"></script>

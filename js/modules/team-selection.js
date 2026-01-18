@@ -58,7 +58,7 @@ App.teamSelection = {
     
     this.currentTeam = teamNumber;
     App.data.currentTeam = `team${teamNumber}`;
-    localStorage.setItem("currentTeam", App.data.currentTeam);
+    App.storage.setItem("currentTeam", App.data.currentTeam);
     
     this.loadTeamData(teamNumber);
     this.updateTeamDisplay();
@@ -95,7 +95,7 @@ App.teamSelection = {
     App.data.currentTeam = `team${teamNumber}`;
     
     // Save team selection
-    localStorage.setItem("currentTeam", App.data.currentTeam);
+    App.storage.setItem("currentTeam", App.data.currentTeam);
     
     // Load new team data
     this.loadTeamData(teamNumber);
@@ -113,20 +113,20 @@ App.teamSelection = {
     const teamId = `team${this.currentTeam}`;
     
     // Save all current data with team prefix
-    localStorage.setItem(`selectedPlayers_${teamId}`, JSON.stringify(App.data.selectedPlayers || []));
-    localStorage.setItem(`statsData_${teamId}`, JSON.stringify(App.data.statsData || {}));
-    localStorage.setItem(`playerTimes_${teamId}`, JSON.stringify(App.data.playerTimes || {}));
-    localStorage.setItem(`seasonData_${teamId}`, JSON.stringify(App.data.seasonData || {}));
+    App.storage.setItem(`selectedPlayers_${teamId}`, JSON.stringify(App.data.selectedPlayers || []));
+    App.storage.setItem(`statsData_${teamId}`, JSON.stringify(App.data.statsData || {}));
+    App.storage.setItem(`playerTimes_${teamId}`, JSON.stringify(App.data.playerTimes || {}));
+    App.storage.setItem(`seasonData_${teamId}`, JSON.stringify(App.data.seasonData || {}));
     
     // Save opponent shots
     const shotCell = document.querySelector('.total-cell[data-cat="Shot"]');
     if (shotCell && shotCell.dataset.opp) {
-      localStorage.setItem(`opponentShots_${teamId}`, shotCell.dataset.opp);
+      App.storage.setItem(`opponentShots_${teamId}`, shotCell.dataset.opp);
     }
     
     // Save active timer players
     const activeTimerPlayers = Object.keys(App.data.activeTimers || {});
-    localStorage.setItem(`activeTimerPlayers_${teamId}`, JSON.stringify(activeTimerPlayers));
+    App.storage.setItem(`activeTimerPlayers_${teamId}`, JSON.stringify(activeTimerPlayers));
     
     console.log(`Saved data for ${teamId}`);
   },
@@ -135,12 +135,12 @@ App.teamSelection = {
     const teamId = `team${teamNumber}`;
     
     // Load team-specific data or use defaults
-    const savedPlayers = localStorage.getItem(`selectedPlayers_${teamId}`);
-    const savedStats = localStorage.getItem(`statsData_${teamId}`);
-    const savedTimes = localStorage.getItem(`playerTimes_${teamId}`);
-    const savedSeason = localStorage.getItem(`seasonData_${teamId}`);
-    const savedOppShots = localStorage.getItem(`opponentShots_${teamId}`);
-    const savedActiveTimers = localStorage.getItem(`activeTimerPlayers_${teamId}`);
+    const savedPlayers = App.storage.getItem(`selectedPlayers_${teamId}`);
+    const savedStats = App.storage.getItem(`statsData_${teamId}`);
+    const savedTimes = App.storage.getItem(`playerTimes_${teamId}`);
+    const savedSeason = App.storage.getItem(`seasonData_${teamId}`);
+    const savedOppShots = App.storage.getItem(`opponentShots_${teamId}`);
+    const savedActiveTimers = App.storage.getItem(`activeTimerPlayers_${teamId}`);
     
     // Reset App data
     App.data.selectedPlayers = savedPlayers ? JSON.parse(savedPlayers) : [];
@@ -238,14 +238,14 @@ App.teamSelection = {
   },
   
   getTeamName(teamId) {
-    const teams = JSON.parse(localStorage.getItem("teamNames") || "{}");
+    const teams = JSON.parse(App.storage.getItem("teamNames") || "{}");
     return teams[teamId] || null;
   },
   
   setTeamName(teamId, name) {
-    const teams = JSON.parse(localStorage.getItem("teamNames") || "{}");
+    const teams = JSON.parse(App.storage.getItem("teamNames") || "{}");
     teams[teamId] = name;
-    localStorage.setItem("teamNames", JSON.stringify(teams));
+    App.storage.setItem("teamNames", JSON.stringify(teams));
     
     const teamNumber = parseInt(teamId.replace("team", ""));
     const nameSpan = document.getElementById(`teamName${teamNumber}`);
@@ -255,7 +255,7 @@ App.teamSelection = {
   },
   
   loadTeamNames() {
-    const teams = JSON.parse(localStorage.getItem("teamNames") || "{}");
+    const teams = JSON.parse(App.storage.getItem("teamNames") || "{}");
     for (let i = 1; i <= 3; i++) {
       const teamId = `team${i}`;
       const name = teams[teamId] || `Neues Team`;
@@ -289,7 +289,7 @@ App.teamSelection = {
   },
   
   initTeamFromStorage() {
-    const savedTeam = localStorage.getItem("currentTeam");
+    const savedTeam = App.storage.getItem("currentTeam");
     if (savedTeam) {
       const teamNumber = parseInt(savedTeam.replace('team', ''));
       if (teamNumber >= 1 && teamNumber <= 3) {
@@ -304,7 +304,7 @@ App.teamSelection = {
     } else {
       this.currentTeam = 1;
       App.data.currentTeam = "team1";
-      localStorage.setItem("currentTeam", "team1");
+      App.storage.setItem("currentTeam", "team1");
       this.loadTeamData(1);
     }
     
@@ -333,7 +333,7 @@ App.teamSelection = {
     ];
     
     keysToRemove.forEach(key => {
-      localStorage.removeItem(key);
+      App.storage.removeItem(key);
     });
     
     // Reset app data
@@ -365,7 +365,7 @@ App.teamSelection = {
   
   // Get current team (for compatibility with app.js)
   getCurrentTeam() {
-    return App.data.currentTeam || localStorage.getItem("currentTeam") || "team1";
+    return App.data.currentTeam || App.storage.getItem("currentTeam") || "team1";
   },
   
   // Export current team data

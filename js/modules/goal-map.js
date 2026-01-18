@@ -258,7 +258,7 @@ App.goalMap = {
   initTimeTracking() {
     if (!this.timeTrackingBox) return;
     
-    let timeData = JSON.parse(localStorage.getItem("timeData")) || {};
+    let timeData = JSON.parse(App.storage.getItem("timeData")) || {};
     
     this.timeTrackingBox.querySelectorAll(".period").forEach(period => {
       const periodNum = period.dataset.period || Math.random().toString(36).slice(2, 6);
@@ -280,7 +280,7 @@ App.goalMap = {
           btn.textContent = newVal;
           if (!timeData[periodNum]) timeData[periodNum] = {};
           timeData[periodNum][idx] = newVal;
-          localStorage.setItem("timeData", JSON.stringify(timeData));
+          App.storage.setItem("timeData", JSON.stringify(timeData));
         };
         
         btn.addEventListener("click", (e) => {
@@ -341,7 +341,7 @@ App.goalMap = {
     
     document.querySelectorAll("#torbildPage .marker-dot").forEach(d => d.remove());
     document.querySelectorAll("#torbildPage .time-btn").forEach(b => b.textContent = "0");
-    localStorage.removeItem("timeData");
+    App.storage.removeItem("timeData");
     
     alert("Goal Map zurückgesetzt.");
   }

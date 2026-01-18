@@ -56,7 +56,7 @@ App.seasonMap = {
     }
     
     // Marker laden
-    const raw = localStorage.getItem("seasonMapMarkers");
+    const raw = App.storage.getItem("seasonMapMarkers");
     if (raw) {
       try {
         const allMarkers = JSON.parse(raw);
@@ -74,7 +74,7 @@ App.seasonMap = {
     }
     
     // Time Data laden
-    const rawTime = localStorage.getItem("seasonMapTimeData");
+    const rawTime = App.storage.getItem("seasonMapTimeData");
     if (rawTime) {
       try {
         const tdata = JSON.parse(rawTime);
@@ -105,16 +105,16 @@ App.seasonMap = {
       return markers;
     });
     
-    localStorage.setItem("seasonMapMarkers", JSON.stringify(allMarkers));
+    App.storage.setItem("seasonMapMarkers", JSON.stringify(allMarkers));
     
     const timeData = this.readTimeTrackingFromBox();
-    localStorage.setItem("seasonMapTimeData", JSON.stringify(timeData));
+    App.storage.setItem("seasonMapTimeData", JSON.stringify(timeData));
     
     const keep = confirm("Spiel wurde in Season Map exportiert. Daten in Goal Map beibehalten? (OK = Ja)");
     if (!keep) {
       document.querySelectorAll("#torbildPage .marker-dot").forEach(d => d.remove());
       document.querySelectorAll("#torbildPage .time-btn").forEach(btn => btn.textContent = "0");
-      localStorage.removeItem("timeData");
+      App.storage.removeItem("timeData");
     }
     
     App.showPage("seasonMap");
@@ -281,8 +281,8 @@ App.seasonMap = {
     
     document.querySelectorAll("#seasonMapPage .marker-dot").forEach(d => d.remove());
     document.querySelectorAll("#seasonMapPage .time-btn").forEach(btn => btn.textContent = "0");
-    localStorage.removeItem("seasonMapMarkers");
-    localStorage.removeItem("seasonMapTimeData");
+    App.storage.removeItem("seasonMapMarkers");
+    App.storage.removeItem("seasonMapTimeData");
     
     alert("Season Map zurückgesetzt.");
   }

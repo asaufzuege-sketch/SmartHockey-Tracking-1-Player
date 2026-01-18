@@ -175,7 +175,7 @@ const App = {
         this.storage.setCurrentPage(page);
       } else {
         try {
-          localStorage.setItem("currentPage", page);
+          App.storage.setItem("currentPage", page);
         } catch (e) {}
       }
       
