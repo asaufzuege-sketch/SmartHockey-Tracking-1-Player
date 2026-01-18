@@ -117,7 +117,7 @@ App.statsTable = {
       // Teamspezifische Gegner-Schüsse aus LocalStorage wiederherstellen
       if (c === "Shot") {
         const teamId = App.teamSelection.getCurrentTeamInfo().id;
-        const savedOppShots = localStorage.getItem(`opponentShots_${teamId}`);
+        const savedOppShots = App.storage.getItem(`opponentShots_${teamId}`);
         if (savedOppShots) {
           td.dataset.opp = savedOppShots;
         } else {
@@ -444,7 +444,7 @@ App.statsTable = {
           
           // Gegner-Schüsse teamspezifisch in LocalStorage speichern
           const teamId = App.teamSelection.getCurrentTeamInfo().id;
-          localStorage.setItem(`opponentShots_${teamId}`, tc.dataset.opp);
+          App.storage.setItem(`opponentShots_${teamId}`, tc.dataset.opp);
           
           this.updateTotals();
         };
@@ -503,15 +503,15 @@ App.statsTable = {
   // Teamspezifische Speicherfunktionen
   saveToStorage() {
     const teamId = App.teamSelection.getCurrentTeamInfo().id;
-    localStorage.setItem(`selectedPlayers_${teamId}`, JSON.stringify(App.data.selectedPlayers));
-    localStorage.setItem(`statsData_${teamId}`, JSON.stringify(App.data.statsData));
-    localStorage.setItem(`playerTimes_${teamId}`, JSON.stringify(App.data.playerTimes));
+    App.storage.setItem(`selectedPlayers_${teamId}`, JSON.stringify(App.data.selectedPlayers));
+    App.storage.setItem(`statsData_${teamId}`, JSON.stringify(App.data.statsData));
+    App.storage.setItem(`playerTimes_${teamId}`, JSON.stringify(App.data.playerTimes));
   },
   
   saveActiveTimersState() {
     const teamId = App.teamSelection.getCurrentTeamInfo().id;
     const activeTimerPlayers = Object.keys(App.data.activeTimers);
-    localStorage.setItem(`activeTimerPlayers_${teamId}`, JSON.stringify(activeTimerPlayers));
+    App.storage.setItem(`activeTimerPlayers_${teamId}`, JSON.stringify(activeTimerPlayers));
   },
   
   // Reset nur für aktuelles Team
@@ -531,10 +531,10 @@ App.statsTable = {
       
       // Teamspezifisch löschen
       const teamId = App.teamSelection ? App.teamSelection.getCurrentTeamInfo().id : 'team1';
-      localStorage.removeItem(`statsData_${teamId}`);
-      localStorage.removeItem(`playerTimes_${teamId}`);
-      localStorage.removeItem(`activeTimerPlayers_${teamId}`);
-      localStorage.removeItem(`opponentShots_${teamId}`);
+      App.storage.removeItem(`statsData_${teamId}`);
+      App.storage.removeItem(`playerTimes_${teamId}`);
+      App.storage.removeItem(`activeTimerPlayers_${teamId}`);
+      App.storage.removeItem(`opponentShots_${teamId}`);
       
       this.render();
       alert("Spieldaten zurückgesetzt.");

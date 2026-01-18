@@ -13,38 +13,38 @@ App.goalValue = {
   
   getOpponents() {
     try {
-      const raw = localStorage.getItem("goalValueOpponents");
+      const raw = App.storage.getItem("goalValueOpponents");
       if (raw) return JSON.parse(raw);
     } catch (e) {}
     return Array.from({ length: 19 }, (_, i) => `Gegner ${i + 1}`);
   },
   
   setOpponents(arr) {
-    localStorage.setItem("goalValueOpponents", JSON.stringify(arr));
+    App.storage.setItem("goalValueOpponents", JSON.stringify(arr));
   },
   
   getData() {
     try {
-      const raw = localStorage.getItem("goalValueData");
+      const raw = App.storage.getItem("goalValueData");
       if (raw) return JSON.parse(raw);
     } catch (e) {}
     return {};
   },
   
   setData(obj) {
-    localStorage.setItem("goalValueData", JSON.stringify(obj));
+    App.storage.setItem("goalValueData", JSON.stringify(obj));
   },
   
   getBottom() {
     try {
-      const raw = localStorage.getItem("goalValueBottom");
+      const raw = App.storage.getItem("goalValueBottom");
       if (raw) return JSON.parse(raw);
     } catch (e) {}
     return this.getOpponents().map(() => 0);
   },
   
   setBottom(arr) {
-    localStorage.setItem("goalValueBottom", JSON.stringify(arr));
+    App.storage.setItem("goalValueBottom", JSON.stringify(arr));
   },
   
   computeValueForPlayer(name) {

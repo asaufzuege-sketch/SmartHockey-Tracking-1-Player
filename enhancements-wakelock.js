@@ -9,7 +9,7 @@
 //
 // Place <script src="enhancements-wakelock.js"></script> after app.js in index.html
 (function () {
-  const STORAGE_KEY = 'keepScreenOn';
+  const STORAGE_KEY = 's1player_keepScreenOn';
   const NO_SLEEP_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/no-sleep/0.12.0/NoSleep.min.js';
   const BTN_ID = 'displayWakeLockBtn';
 

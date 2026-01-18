@@ -33,7 +33,7 @@
   // Read localStorage export fallback (supports array and object shapes)
   function readFromLocalStorageFallback() {
     try {
-      const raw = localStorage.getItem('seasonMapTimeData') || localStorage.getItem('timeData') || null;
+      const raw = App.storage.getItem('seasonMapTimeData') || App.storage.getItem('timeData') || null;
       if (!raw) return null;
       const obj = JSON.parse(raw);
       if (!obj || typeof obj !== 'object') return null;
@@ -323,8 +323,8 @@
   function setupAutoUpdate() {
     const clearLSOnReset = () => {
       try {
-        localStorage.removeItem('seasonMapTimeData');
-        localStorage.removeItem('seasonMapMarkers');
+        App.storage.removeItem('seasonMapTimeData');
+        App.storage.removeItem('seasonMapMarkers');
       } catch (e) {}
       setTimeout(() => renderSeasonMomentumGraphic(), 140);
     };
